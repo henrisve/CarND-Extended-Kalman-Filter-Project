@@ -44,7 +44,7 @@ FusionEKF::FusionEKF() {
              0, 0, 0, 1;
 
   ekf_.P_ = MatrixXd(4,4); //4x4 matrix
-  ekf_.P_ << 1, 0, 0, 0, // Same with this.. should be possible to reference part of course
+  ekf_.P_ << 1, 0, 0, 0, 
             0, 1, 0, 0,
             0, 0, 1000, 0,
             0, 0, 0, 1000;
