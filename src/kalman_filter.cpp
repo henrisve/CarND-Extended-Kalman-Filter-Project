@@ -1,3 +1,4 @@
+#include <math.h>      
 #include "kalman_filter.h"
 
 using Eigen::MatrixXd;
@@ -24,19 +25,65 @@ void KalmanFilter::Predict() {
   /**
   TODO:
     * predict the state
+    * //section 8 and 9 lesson 5
   */
+  x_ = F_ * x_; 
+  MatrixXd Ft = F_.transpose();
+  P_ = F_ * P_ * Ft + Q_;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
   /**
   TODO:
     * update the state by using Kalman Filter equations
-  */
+    * section 7 lesson 5 */
+	long x_size = x_.size();
+	MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  VectorXd y_ = z - H_ * x_;
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
+  MatrixXd Si = S.inverse();
+  MatrixXd K =  P_ * Ht * Si;
+
+  //new state
+  x_ = x_ + (K * y_);
+  P_ = (I - K * H_) * P_;
+
+  
+
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
   TODO:
-    * update the state by using Extended Kalman Filter equations
-  */
+  * update the state by using Extended Kalman Filter equations
+  * section 14 and 21 lesson 5*/
+  long x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
+
+  float x = x_(0);
+  float y = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
+
+  float rho = sqrt(x*x+y*y);
+  float theta = atan2(y,x);
+  float ro_dot = (x*vx+y*vy)/rho;
+  VectorXd z_pred = VectorXd(3);
+  z_pred << rho,theta,ro_dot;
+
+  VectorXd y_ = z-z_pred;
+  // Wrap y between -pi and pi 
+  y_(1)=remainder(y_(1), 2.0 * M_PI);
+  // section 7 lesson 5
+
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
+  MatrixXd Si = S.inverse();
+  MatrixXd K =  P_ * Ht * Si;
+
+  //new state
+  x_ = x_ + (K * y_);
+  P_ = (I - K * H_) * P_;
+  
 }
